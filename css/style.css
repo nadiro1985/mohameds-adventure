@@ -170,3 +170,14 @@ button { font-family: inherit; color: inherit; border: 0; cursor: pointer; paddi
 @media (prefers-reduced-motion: reduce) {
   .mascot, .owl, .node.next, .gift { animation: none; }
 }
+
+/* ---------- Parent settings ---------- */
+.panel { background: #fff; border-radius: 26px; padding: 16px; margin-bottom: 20px; }
+.panel h3 { margin: 6px 0 10px; font-size: 22px; }
+.panel .nav { margin-bottom: 14px; }
+.btn.sel, .voice.sel { background: var(--good-soft); outline: 3px solid var(--good); }
+.note { margin: 0 0 10px; color: var(--muted); font-size: 15px; }
+.voices { display: grid; gap: 8px; margin-bottom: 14px; }
+.voice { display: flex; justify-content: space-between; align-items: center; gap: 8px; text-align: left; background: #f8f9fa; border-radius: 16px; padding: 12px 14px; font-size: 18px; font-weight: bold; box-shadow: 0 3px 0 rgba(0,0,0,.1); }
+.voice small { color: var(--muted); font-weight: normal; font-size: 13px; }
+.tipbox { background: #fff9db; border-radius: 16px; padding: 12px 14px; font-size: 15px; line-height: 1.45; }

@@ -60,13 +60,13 @@ export function introLetters(stage, kit, letters) {
           <button class="btn press" data-act="prev" ${i === 0 ? 'style="visibility:hidden"' : ''}>⬅️</button>
           <button class="btn go press" data-act="next">${i === letters.length - 1 ? "Let's play! ▶️" : '➡️'}</button>
         </div>`;
-      kit.owl(`${x.L} is for ${word}`, `${x.name}. ${x.name} is for ${x.word}.`);
+      kit.owl(`${x.L} is for ${word}`, `${x.name} is for ${x.word}.`);
     };
     stage.onclick = e => {
       const b = e.target.closest('[data-act]');
       if (!b) return;
       const x = letters[i];
-      if (b.dataset.act === 'repeat') say(`${x.name}. ${x.name} is for ${x.word}.`);
+      if (b.dataset.act === 'repeat') say(`${x.name} is for ${x.word}.`);
       if (b.dataset.act === 'prev' && i > 0) { sfx.tap(); i--; show(); }
       if (b.dataset.act === 'next') {
         sfx.tap();
@@ -136,7 +136,7 @@ function countAlong() {
     btn.classList.add('counted');
     btn.insertAdjacentHTML('beforeend', `<span class="badge">${counted}</span>`);
     sfx.count(counted);
-    say(numName(counted), { rate: 0.95 });
+    say(numName(counted));
   };
 }
 
@@ -163,7 +163,7 @@ export function introNumbers(stage, kit, nums) {
           <button class="btn press" data-act="prev" ${i === 0 ? 'style="visibility:hidden"' : ''}>⬅️</button>
           <button class="btn go press" data-act="next">${i === nums.length - 1 ? "Let's play! ▶️" : '➡️'}</button>
         </div>`;
-      kit.owl(`${n} — ${numName(n)}. Tap to count!`, `${numName(n)}. Let's count to ${numName(n)}!`);
+      kit.owl(`${n} — ${numName(n)}. Tap to count!`, `This is ${numName(n)}. Tap to count!`);
     };
     stage.onclick = e => {
       const t = e.target.closest('[data-extra="thing"]');
@@ -240,7 +240,7 @@ export function feedMonkey(stage, kit, n) {
         document.getElementById('basket').textContent = got;
         flash(document.getElementById('monkey'), 'eat');
         sfx.count(got);
-        say(numName(got), { rate: 0.95 });
+        say(numName(got));
         return;
       }
       const b = e.target.closest('[data-act]');
@@ -330,7 +330,7 @@ export function balloons(stage, kit, { items, targets, kind }) {
           say(`${pick(PRAISE)} You popped them all!`);
           kit.wait(1800).then(resolve);
         } else {
-          say(pick(['Pop!', 'Yes!', 'Great!']), { rate: 1 });
+          say(pick(['Pop!', 'Yes!', 'Great!']));
           kit.wait(700).then(announce);
         }
       } else {

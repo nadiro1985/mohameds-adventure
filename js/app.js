@@ -1,7 +1,7 @@
 import { WORLDS, STICKERS, letter } from './data.js';
 import { store } from './store.js';
-import { say, sfx, unlockAudio } from './sound.js';
-import { range, sample, confetti, toast } from './util.js';
+import { say, sfx, unlockAudio, englishVoices, voiceSettings } from './sound.js';
+import { range, sample, confetti, toast, esc } from './util.js';
 import * as G from './games.js';
 
 const $app = document.getElementById('app');
@@ -30,7 +30,7 @@ const starsRow = n => '⭐'.repeat(n) + '☆'.repeat(3 - n);
 function home() {
   setTheme('home');
   render(`
-    <div class="bar"><span class="spacer"></span>${starPill()}</div>
+    <div class="bar"><button class="round-btn press" data-act="settings" aria-label="Parent settings">⚙️</button><span class="spacer"></span>${starPill()}</div>
     <div class="home">
       <div class="mascot">🦉</div>
       <h1 class="title">Mohamed's<br>Adventure</h1>
@@ -43,7 +43,50 @@ function home() {
     sfx.tap();
     if (act === 'play') { say("Let's go on an adventure!"); map(); }
     if (act === 'stickers') stickerBook();
+    if (act === 'settings') settings();
   });
+}
+
+// ---------- Parent settings: voice and speed ----------
+function settings() {
+  setTheme('home');
+  const cur = voiceSettings.current();
+  const voices = englishVoices().slice(0, 12);
+  const speed = voiceSettings.speed();
+  render(`
+    <div class="bar">${backBtn()}<span class="spacer"></span></div>
+    <h2 class="h2">⚙️ Parent Settings</h2>
+    <div class="panel">
+      <h3>Speaking speed</h3>
+      <div class="nav">
+        <button class="btn press ${speed === 'slow' ? 'sel' : ''}" data-act="speed" data-s="slow">🐢 Slow</button>
+        <button class="btn press ${speed === 'normal' ? 'sel' : ''}" data-act="speed" data-s="normal">🐇 Normal</button>
+      </div>
+      <h3>Voice</h3>
+      <p class="note">Tap a voice to hear it.</p>
+      <div class="voices">
+        ${voices.length ? voices.map(v => `
+          <button class="voice press ${cur && v.voiceURI === cur.voiceURI ? 'sel' : ''}" data-act="voice" data-uri="${esc(v.voiceURI)}">
+            <span>${esc(v.name)} <small>${esc(v.lang)}</small></span>
+            <span>${voiceSettings.isPremium(v) ? '🌟 Best' : ''} ${cur && v.voiceURI === cur.voiceURI ? '✅' : ''}</span>
+          </button>`).join('') : '<p class="note">Loading voices… open this page again in a moment.</p>'}
+      </div>
+      <div class="tipbox">
+        <b>Want a more natural voice?</b><br>
+        On the iPhone open <b>Settings → Accessibility → Spoken Content → Voices → English</b>
+        and download a voice marked <b>Enhanced</b> or <b>Premium</b> (for example “Ava (Premium)”).
+        Then come back here and choose it — it will show 🌟 Best.
+      </div>
+    </div>
+  `, (act, b) => {
+    if (act === 'back') { sfx.tap(); return home(); }
+    if (act === 'speed') { voiceSettings.setSpeed(b.dataset.s); say('B is for ball.'); settings(); }
+    if (act === 'voice') { voiceSettings.setVoice(b.dataset.uri); say('Hello Mohamed! A is for apple.'); settings(); }
+  });
+  if (!voices.length && 'speechSynthesis' in window) {
+    const me = screenId;
+    speechSynthesis.addEventListener('voiceschanged', () => { if (me === screenId) settings(); }, { once: true });
+  }
 }
 
 // ---------- World map ----------
