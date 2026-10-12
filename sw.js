@@ -1,9 +1,9 @@
 // Keeps the game working offline. Bump VERSION when files change so phones
 // pick up the new version.
-const VERSION = 'v3';
+const VERSION = 'v4';
 const FILES = [
   './', 'index.html', 'manifest.json', 'css/style.css',
-  'js/app.js', 'js/data.js', 'js/games.js', 'js/sound.js', 'js/store.js', 'js/util.js',
+  'js/app.js', 'js/data.js', 'js/games.js', 'js/sound.js', 'js/store.js', 'js/util.js', 'js/listen.js',
   'icons/icon-180.png', 'icons/icon-192.png', 'icons/icon-512.png',
 ];
 

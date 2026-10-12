@@ -1,4 +1,4 @@
-import { WORLDS, STICKERS, WORD_SETS, letter } from './data.js';
+import { WORLDS, STICKERS, WORD_SETS, SAY_SETS, letter } from './data.js';
 import { store } from './store.js';
 import { say, sfx, unlockAudio, englishVoices, voiceSettings } from './sound.js';
 import { range, sample, pick, confetti, toast, esc } from './util.js';
@@ -6,13 +6,15 @@ import * as G from './games.js';
 
 const $app = document.getElementById('app');
 let screenId = 0; // bumps on every screen change so old games stop
+let screenName = '';
 
 document.addEventListener('pointerdown', unlockAudio, { capture: true });
 
 function setTheme(name) { document.body.className = `theme-${name}`; }
 
-function render(html, onAct) {
+function render(html, onAct, name = '') {
   screenId++;
+  screenName = name;
   $app.innerHTML = html;
   $app.onclick = e => {
     const b = e.target.closest('[data-act]');
@@ -43,7 +45,7 @@ function home() {
     sfx.tap();
     if (act === 'play') { say("Let's go on an adventure!"); map(); }
     if (act === 'stickers') stickerBook();
-    if (act === 'settings') settings();
+    if (act === 'settings') parentGate(parentCorner);
   });
 }
 
@@ -55,7 +57,7 @@ function settings() {
   const speed = voiceSettings.speed();
   render(`
     <div class="bar">${backBtn()}<span class="spacer"></span></div>
-    <h2 class="h2">⚙️ Parent Settings</h2>
+    <h2 class="h2">🔊 Voice Settings</h2>
     <div class="panel">
       <h3>Speaking speed</h3>
       <div class="nav">
@@ -79,10 +81,10 @@ function settings() {
       </div>
     </div>
   `, (act, b) => {
-    if (act === 'back') { sfx.tap(); return home(); }
+    if (act === 'back') { sfx.tap(); return parentCorner(); }
     if (act === 'speed') { voiceSettings.setSpeed(b.dataset.s); say('B is for ball.'); settings(); }
     if (act === 'voice') { voiceSettings.setVoice(b.dataset.uri); say('Hello Mohamed! A is for apple.'); settings(); }
-  });
+  }, 'settings');
   if (!voices.length && 'speechSynthesis' in window) {
     const me = screenId;
     speechSynthesis.addEventListener('voiceschanged', () => { if (me === screenId) settings(); }, { once: true });
@@ -91,6 +93,7 @@ function settings() {
 
 // ---------- World map ----------
 function map() {
+  if (store.timeUp()) return rest();
   setTheme('home');
   render(`
     <div class="bar">${backBtn()}<span class="spacer"></span>${starPill()}</div>
@@ -107,6 +110,15 @@ function map() {
   `, (act, b) => {
     sfx.tap();
     if (act === 'back') home();
+
+// Count play time while the game is on screen, and stop at the daily limit
+// (never in the middle of a level).
+const TICK = 15;
+setInterval(() => {
+  if (document.visibilityState !== 'visible') return;
+  store.addPlaySeconds(TICK);
+  if (store.timeUp() && !['level', 'rest', 'gate', 'parent', 'settings'].includes(screenName)) rest();
+}, TICK * 1000);
     if (act === 'soon') say('This world is coming soon!');
     if (act === 'world') {
       const w = WORLDS.find(x => x.id === b.dataset.id);
@@ -118,6 +130,7 @@ function map() {
 
 // ---------- Levels in a world ----------
 function world(w) {
+  if (store.timeUp()) return rest();
   setTheme(w.theme);
   const firstNew = w.levels.findIndex((l, i) => store.isUnlocked(w, i) && !store.best(l.id));
   render(`
@@ -172,6 +185,12 @@ function buildSteps(w, level) {
     steps.push((s, k) => G.introWords(s, k, level.spell, { spell: true }));
     add(3, (s, k) => G.missingLetter(s, k, pick(level.spell)));
     for (const word of sample(level.spell, 4)) steps.push((s, k) => G.spellWord(s, k, word));
+  } else if (w.id === 'tree') {
+    const tree = { apples: 0 };
+    const nouns = level.say === 'animals';
+    for (const word of sample(WORD_SETS[level.say] || SAY_SETS[level.say], 5)) {
+      steps.push((s, k) => G.talkWord(s, k, word, tree, { nouns }));
+    }
   } else {
     const nums = range(level.from, level.to);
     if (!level.review) steps.push((s, k) => G.introNumbers(s, k, nums));
@@ -189,6 +208,7 @@ function buildSteps(w, level) {
 const pickNum = l => l.from + Math.floor(Math.random() * (l.to - l.from + 1));
 
 async function playLevel(w, i) {
+  if (store.timeUp()) return rest();
   const level = w.levels[i];
   setTheme(w.theme);
   render(`
@@ -198,7 +218,7 @@ async function playLevel(w, i) {
   `, act => {
     if (act === 'back') { sfx.tap(); world(w); }
     if (act === 'owl') say(lastSpeech);
-  });
+  }, 'level');
 
   const me = screenId;
   let mistakes = 0, lastSpeech = '';
@@ -270,6 +290,156 @@ function result(w, i, stars) {
   document.querySelectorAll('.result-stars span').forEach((el, k) => {
     if (k < stars) setTimeout(() => { if (me === screenId) { el.classList.add('on'); sfx.star(); } }, 500 + k * 450);
   });
+}
+
+// ---------- Time to rest (daily limit reached) ----------
+function rest() {
+  setTheme('home');
+  render(`
+    <div class="bar"><button class="round-btn press" data-act="parents" aria-label="Grown-ups">⚙️</button><span class="spacer"></span>${starPill()}</div>
+    <div class="home">
+      <div class="sleep">😴🦉</div>
+      <h1 class="title">Time to rest!</h1>
+      <p class="subtitle">Great playing today, Mohamed!<br>Let's play again tomorrow. 🌙</p>
+      <button class="big-btn alt press" data-act="stickers">📒 My Stickers</button>
+    </div>
+  `, act => {
+    sfx.tap();
+    if (act === 'parents') parentGate(parentCorner);
+    if (act === 'stickers') stickerBook();
+  }, 'rest');
+  say('Great playing today, Mohamed! The owl is sleepy now. Let’s play again tomorrow!');
+}
+
+// ---------- Grown-up check before the parent corner ----------
+function parentGate(next) {
+  setTheme('home');
+  const a = 5 + Math.floor(Math.random() * 5), b = 4 + Math.floor(Math.random() * 6);
+  let typed = '';
+  render(`
+    <div class="bar">${backBtn()}<span class="spacer"></span></div>
+    <h2 class="h2">Grown-ups only 🔒</h2>
+    <div class="stage" style="justify-content:flex-start">
+      <p class="subtitle" style="color:#fff;font-size:24px;margin:0">What is ${a} + ${b}?</p>
+      <div class="answer-box" id="ans"></div>
+      <div class="keypad">
+        ${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => `<button class="btn press" data-act="key" data-n="${n}">${n}</button>`).join('')}
+        <button class="btn press" data-act="del">⌫</button>
+        <button class="btn press" data-act="key" data-n="0">0</button>
+        <button class="btn go press" data-act="ok">✓</button>
+      </div>
+    </div>
+  `, (act, btn) => {
+    const box = document.getElementById('ans');
+    if (act === 'back') { sfx.tap(); return home(); }
+    if (act === 'key' && typed.length < 3) { sfx.tap(); typed += btn.dataset.n; }
+    if (act === 'del') typed = typed.slice(0, -1);
+    if (act === 'ok') {
+      if (+typed === a + b) return next();
+      sfx.bad();
+      return parentGate(next);
+    }
+    box.textContent = typed;
+  }, 'gate');
+}
+
+// ---------- Parent corner: what he knows, play time, settings ----------
+function level3(key) {
+  const [right, tries] = store.stat(key);
+  if (!tries) return '';
+  const acc = right / tries;
+  if (tries >= 2 && acc >= 0.75) return 'good';
+  if (tries >= 2 && acc < 0.5) return 'hard';
+  return 'mid';
+}
+
+function wordSummary() {
+  const agg = {};
+  for (const prefix of ['word', 'spell', 'say']) {
+    for (const k of store.statKeys(prefix)) {
+      const w = k.slice(prefix.length + 1);
+      const [r, t] = store.stat(k);
+      agg[w] = [(agg[w]?.[0] || 0) + r, (agg[w]?.[1] || 0) + t];
+    }
+  }
+  const all = Object.entries(agg).map(([w, [r, t]]) => ({ w, r, t, acc: r / t }));
+  return {
+    known: all.filter(x => x.t >= 2 && x.acc >= 0.75).sort((a, b) => b.r - a.r),
+    practice: all.filter(x => x.t >= 2 && x.acc < 0.5).sort((a, b) => a.acc - b.acc),
+  };
+}
+
+const mins = sec => Math.round(sec / 60);
+
+function parentCorner(confirmReset = false) {
+  setTheme('home');
+  const words = wordSummary();
+  const limit = store.limitMin();
+  const levelsDone = WORLDS.filter(w => w.levels).reduce((a, w) => a + w.levels.filter(l => store.best(l.id)).length, 0);
+  const levelsAll = WORLDS.filter(w => w.levels).reduce((a, w) => a + w.levels.length, 0);
+  const grid = (items, prefix) => `<div class="grid-know">${items.map(x =>
+    `<div class="know ${level3(`${prefix}:${x}`)}">${x}</div>`).join('')}</div>`;
+  const chips = (list, cls) => list.length
+    ? `<div class="chips">${list.slice(0, 15).map(x => `<span class="chip ${cls}">${esc(x.w)}</span>`).join('')}</div>`
+    : '<p class="note">Nothing yet — keep playing!</p>';
+
+  render(`
+    <div class="bar">${backBtn()}<span class="spacer"></span></div>
+    <h2 class="h2">👨‍👩‍👦 Parent Corner</h2>
+    <div class="panel">
+      <div class="stat-row">
+        <div class="stat"><b>⭐ ${store.totalStars()}</b><small>stars</small></div>
+        <div class="stat"><b>${levelsDone}/${levelsAll}</b><small>levels done</small></div>
+        <div class="stat"><b>📒 ${store.stickers().length}</b><small>stickers</small></div>
+      </div>
+      <div class="stat-row">
+        <div class="stat"><b>${mins(store.playedToday())}</b><small>minutes today</small></div>
+        <div class="stat"><b>${mins(store.playedLastDays(7))}</b><small>minutes this week</small></div>
+        <div class="stat"><b>${words.known.length}</b><small>words known</small></div>
+      </div>
+
+      <h3>Worlds</h3>
+      ${WORLDS.filter(w => w.levels).map(w => {
+        const got = w.levels.reduce((a, l) => a + store.best(l.id), 0), max = w.levels.length * 3;
+        return `<div class="wbar"><span style="width:28px">${w.icon}</span><div class="progress"><div style="width:${got / max * 100}%"></div></div><span>${got}/${max}</span></div>`;
+      }).join('')}
+
+      <h3>Letters</h3>
+      ${grid('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''), 'letter')}
+      <div class="legend"><span style="--c:#b2f2bb">knows it</span><span style="--c:#ffec99">learning</span><span style="--c:#ffc9c9">finds it hard</span><span style="--c:#f1f3f5">not yet</span></div>
+
+      <h3>Numbers</h3>
+      ${grid(range(1, 20), 'number')}
+
+      <h3>Words to practice</h3>
+      ${chips(words.practice, '')}
+      <h3>Words he knows</h3>
+      ${chips(words.known, 'ok')}
+
+      <h3>Daily play time</h3>
+      <div class="chips">
+        ${[0, 15, 20, 30, 45].map(m => `<button class="btn press ${limit === m ? 'sel' : ''}" style="flex:none;padding:10px 14px;font-size:18px" data-act="limit" data-m="${m}">${m ? m + ' min' : 'No limit'}</button>`).join('')}
+      </div>
+      ${store.timeUp() ? '<button class="btn go press" data-act="bonus" style="width:100%;margin-bottom:12px">➕ 10 more minutes today</button>' : ''}
+
+      <h3>Voice</h3>
+      <button class="btn press" data-act="voice" style="width:100%;margin-bottom:12px">🔊 Voice and speed</button>
+
+      <button class="btn press danger" data-act="reset" style="width:100%">${confirmReset ? '⚠️ Tap again to erase everything' : '🗑️ Reset progress'}</button>
+    </div>
+  `, (act, b) => {
+    sfx.tap();
+    if (act === 'back') home();
+    if (act === 'limit') { store.setLimit(+b.dataset.m); parentCorner(); }
+    if (act === 'bonus') { store.addBonus(10); home(); }
+    if (act === 'voice') settings();
+    if (act === 'reset') {
+      if (!confirmReset) return parentCorner(true);
+      store.resetProgress();
+      toast('Progress erased.', 3000);
+      home();
+    }
+  }, 'parent');
 }
 
 // ---------- Sticker book ----------

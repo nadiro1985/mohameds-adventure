@@ -15,14 +15,23 @@ icon, opens full-screen and works offline. No App Store is needed.
 | 🌴 **Number Jungle** | Numbers 1–20, counting | Number cards (tap to count), How many?, Balloon Pop, Feed the Monkey, What comes next? |
 | 🐮 **Word Farm** | First words: animals, colors, food, body, family, things that go | Word cards, Listen & Find, Read & Find, picture/color balloons, Memory Match, What color is it? |
 | 🏰 **Spelling Castle** | Spelling 3- and 4-letter words (cat, dog, fish, frog…) | Spelling cards (c-a-t), Find the missing letter, Spell It with letter tiles |
-| 🌳 Talking Tree | *(coming in Version 3)* | |
+| 🌳 **Talking Tree** | Speaking: animals, colors, food, numbers, everyday phrases (hello, thank you…) | Hear the word, tap 🎤 and say it — every right word grows an apple on the tree |
 
 - Every instruction is **spoken out loud**, so he doesn't need to read yet (tap the owl to hear it again).
 - Wrong answers just wiggle and he tries again. There are no timers and no losing.
 - 1–3 ⭐ per level; finishing a level unlocks the next one.
 - A 🎁 present after every level adds a sticker to his **Sticker Book** (60 to collect).
 - Progress is saved on the phone.
-- ⚙️ Parent Settings (gear on the home screen): choose the voice and speaking speed.
+- ⚙️ **Parent Corner** (gear on the home screen, behind a small sum only grown-ups can solve):
+  stars, levels done, play time today/this week, which letters and numbers he knows or finds hard,
+  words to practice, a **daily play-time limit** (the owl says "time to rest", never in the middle of a level),
+  voice and speed, and reset.
+
+### Microphone on the iPhone (Talking Tree)
+The Talking Tree uses the iPhone's speech recognition. If the microphone button doesn't work:
+- Allow the microphone when the iPhone asks.
+- Check **Settings → Siri** (or **Settings → General → Keyboard → Enable Dictation**) is on.
+- If it still doesn't work, the game switches to "say it out loud, then tap ✅" so he can keep playing.
 
 ## Put it on the iPhone
 

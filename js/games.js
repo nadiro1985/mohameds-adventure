@@ -3,12 +3,15 @@
 // helper, mistake counting and an `alive()` check (false once he leaves).
 import { LETTERS, NUMBER_WORDS, COUNT_THINGS, COLOR_THINGS, WORD_SETS, PRAISE, TRY_AGAIN, letter } from './data.js';
 import { say, sfx } from './sound.js';
+import { store } from './store.js';
+import { canListen, listen, matches } from './listen.js';
 import { shuffle, pick, sample, range, cap, esc, confetti, flash } from './util.js';
 
 const BALLOON_COLORS = ['#ff6b6b', '#4dabf7', '#51cf66', '#fcc419', '#cc5de8', '#ff922b', '#20c997', '#f06595'];
 
 // ---------- Shared: one multiple-choice question ----------
-function ask(stage, kit, { show = '', owlText, speech, options, answer, nameOf, onExtra }) {
+// `track` (e.g. 'letter:B') records in the parent corner whether he got it first time.
+function ask(stage, kit, { show = '', owlText, speech, options, answer, nameOf, onExtra, track }) {
   stage.innerHTML = `
     ${show ? `<div class="question" data-act="repeat">${show}</div>`
            : `<button class="speak press" data-act="repeat" aria-label="Hear it again">🔊</button>`}
@@ -17,7 +20,7 @@ function ask(stage, kit, { show = '', owlText, speech, options, answer, nameOf, 
     </div>`;
   kit.owl(owlText, speech);
   return new Promise(resolve => {
-    let done = false;
+    let done = false, firstTry = true;
     stage.onclick = e => {
       const extra = e.target.closest('[data-extra]');
       if (extra && onExtra) return onExtra(extra);
@@ -26,12 +29,14 @@ function ask(stage, kit, { show = '', owlText, speech, options, answer, nameOf, 
       if (!b || done) return;
       if (b.dataset.k === String(answer)) {
         done = true;
+        if (track) store.record(track, firstTry);
         b.classList.add('right');
         sfx.good();
         confetti(10);
         say(`${pick(PRAISE)} ${nameOf(answer)}!`);
         kit.wait(1400).then(resolve);
       } else {
+        firstTry = false;
         kit.miss();
         flash(b, 'wrong');
         sfx.bad();
@@ -91,7 +96,7 @@ export function letterQuestion(stage, kit, set) {
     const opts = shuffle([target, ...others(2)]);
     return ask(stage, kit, {
       owlText: `Find the letter ${target.L}`, speech: `Find the letter ${name}.`,
-      options: opts.map(x => ({ key: x.L, html: x.L })), answer: target.L, nameOf: letterName,
+      options: opts.map(x => ({ key: x.L, html: x.L })), answer: target.L, nameOf: letterName, track: `letter:${target.L}`,
     });
   }
   if (kind === 'starts') {
@@ -99,7 +104,7 @@ export function letterQuestion(stage, kit, set) {
     return ask(stage, kit, {
       show: `<div class="q-pic">${target.pic}</div><div class="q-word">${esc(cap(target.word))}</div>`,
       owlText: `${cap(target.word)} starts with…?`, speech: `${target.word}. Which letter does ${target.word} start with?`,
-      options: opts.map(x => ({ key: x.L, html: x.L })), answer: target.L, nameOf: letterName,
+      options: opts.map(x => ({ key: x.L, html: x.L })), answer: target.L, nameOf: letterName, track: `letter:${target.L}`,
     });
   }
   if (kind === 'small') {
@@ -108,7 +113,7 @@ export function letterQuestion(stage, kit, set) {
       show: `<div class="q-big">${target.L}</div>`,
       owlText: `Find the small ${target.L}`, speech: `Find the small letter ${name}.`,
       options: opts.map(x => ({ key: x.L.toLowerCase(), html: x.L.toLowerCase() })),
-      answer: target.L.toLowerCase(), nameOf: l => `small ${letterName(l)}`,
+      answer: target.L.toLowerCase(), nameOf: l => `small ${letterName(l)}`, track: `letter:${target.L}`,
     });
   }
   // picture: which picture starts with this letter?
@@ -116,7 +121,7 @@ export function letterQuestion(stage, kit, set) {
   return ask(stage, kit, {
     show: `<div class="q-big">${target.L}<span style="color:#1c7ed6">${target.L.toLowerCase()}</span></div>`,
     owlText: `What starts with ${target.L}?`, speech: `Which picture starts with ${name}?`,
-    options: opts.map(x => ({ key: x.L, html: x.pic })), answer: target.L,
+    options: opts.map(x => ({ key: x.L, html: x.pic })), answer: target.L, track: `letter:${target.L}`,
     nameOf: L => letter(L).word,
   });
 }
@@ -188,7 +193,7 @@ export function countQuestion(stage, kit, from, to) {
   return ask(stage, kit, {
     show: thingsHTML(n, emoji),
     owlText: `How many ${plural}? Tap to count!`, speech: `How many ${plural}? Tap them to count.`,
-    options: opts.map(x => ({ key: String(x), html: x })), answer: n, nameOf: numName,
+    options: opts.map(x => ({ key: String(x), html: x })), answer: n, nameOf: numName, track: `number:${n}`,
     onExtra: countAlong(),
   });
 }
@@ -198,7 +203,7 @@ export function hearNumberQuestion(stage, kit, from, to) {
   const opts = shuffle([n, ...nearby(n, from, to, 2)]);
   return ask(stage, kit, {
     owlText: `Find the number ${numName(n)}`, speech: `Find the number ${numName(n)}.`,
-    options: opts.map(x => ({ key: String(x), html: x })), answer: n, nameOf: numName,
+    options: opts.map(x => ({ key: String(x), html: x })), answer: n, nameOf: numName, track: `number:${n}`,
   });
 }
 
@@ -208,7 +213,7 @@ export function nextNumberQuestion(stage, kit, from, to) {
   return ask(stage, kit, {
     show: `<div class="q-seq">${n - 2}, ${n - 1}, ❓</div>`,
     owlText: 'What comes next?', speech: `${numName(n - 2)}, ${numName(n - 1)}... what comes next?`,
-    options: opts.map(x => ({ key: String(x), html: x })), answer: n, nameOf: numName,
+    options: opts.map(x => ({ key: String(x), html: x })), answer: n, nameOf: numName, track: `number:${n}`,
   });
 }
 
@@ -230,7 +235,7 @@ export function feedMonkey(stage, kit, n) {
   draw();
   kit.owl(`Give the monkey ${n} bananas!`, speech);
   return new Promise(resolve => {
-    let got = 0, finished = false;
+    let got = 0, finished = false, firstTry = true;
     stage.onclick = e => {
       if (finished) return;
       const banana = e.target.closest('[data-b]');
@@ -249,16 +254,19 @@ export function feedMonkey(stage, kit, n) {
       if (b.dataset.act === 'done') {
         if (got === n) {
           finished = true;
+          store.record(`number:${n}`, firstTry);
           sfx.good();
           confetti(14);
           document.getElementById('monkey').textContent = '🙈';
           say(`Yummy! ${numName(n)} bananas! Thank you!`);
           kit.wait(1800).then(resolve);
         } else if (got < n) {
+          firstTry = false;
           kit.miss();
           sfx.bad();
           say(`More bananas, please! I want ${numName(n)}.`);
         } else {
+          firstTry = false;
           kit.miss();
           sfx.bad();
           say(`Too many! I want ${numName(n)}. Let's try again.`);
@@ -281,7 +289,8 @@ export function balloons(stage, kit, { items, targets, kind }) {
   const sky = stage.querySelector('#sky');
   const dots = stage.querySelectorAll('.dots span');
   const byKey = k => items.find(x => x.key === k);
-  let ti = 0, finished = false, lane = Math.floor(Math.random() * 4);
+  let ti = 0, finished = false, lane = Math.floor(Math.random() * 4), clean = true;
+  const trackKey = k => `${kind || 'word'}:${k}`;
 
   const announce = () => {
     const t = byKey(targets[ti]);
@@ -318,6 +327,8 @@ export function balloons(stage, kit, { items, targets, kind }) {
       const el = e.target.closest('.balloon');
       if (!el || finished || el.classList.contains('popped')) return;
       if (el.dataset.k === targets[ti]) {
+        store.record(trackKey(targets[ti]), clean);
+        clean = true;
         el.classList.add('popped');
         sfx.pop();
         setTimeout(() => el.remove(), 320);
@@ -335,6 +346,7 @@ export function balloons(stage, kit, { items, targets, kind }) {
           kit.wait(700).then(announce);
         }
       } else {
+        clean = false;
         kit.miss();
         flash(el, 'nope');
         sfx.bad();
@@ -403,12 +415,12 @@ export function wordQuestion(stage, kit, words, mode) {
     return ask(stage, kit, {
       show: `<div class="q-word" style="font-size:52px">${esc(w)}</div>`,
       owlText: 'Read the word. Tap the picture!', speech: 'Can you read this word? Tap the picture.',
-      options, answer: w, nameOf,
+      options, answer: w, nameOf, track: `word:${w}`,
     });
   }
   return ask(stage, kit, {
     owlText: `Find: ${w}`, speech: `Where is the ${w}?`,
-    options, answer: w, nameOf,
+    options, answer: w, nameOf, track: `word:${w}`,
   });
 }
 
@@ -420,7 +432,7 @@ export function colorQuestion(stage, kit) {
     show: `<div class="q-pic">${pic}</div><div class="q-word">${esc(cap(thing))}</div>`,
     owlText: `What color is the ${thing}?`, speech: `What color is the ${thing}?`,
     options: shuffle([color, ...others]).map(c => ({ key: c, html: circles[c] })),
-    answer: color, nameOf: c => c,
+    answer: color, nameOf: c => c, track: `word:${color}`,
   });
 }
 
@@ -478,7 +490,7 @@ export function missingLetter(stage, kit, [w, p]) {
   return ask(stage, kit, {
     show: `<div class="q-pic">${p}</div><div class="q-word spaced" style="font-size:48px">${shown}</div>`,
     owlText: `${cap(w)}: which letter is missing?`, speech: `${w}. Which letter is missing?`,
-    options: opts.map(x => ({ key: x, html: x })), answer: ch,
+    options: opts.map(x => ({ key: x, html: x })), answer: ch, track: `spell:${w}`,
     nameOf: x => x === ch ? `${letterName(x)}. ${w}` : letterName(x),
   });
 }
@@ -494,7 +506,7 @@ export function spellWord(stage, kit, [w, p]) {
     <div class="tiles">${tiles.map(t => `<button class="tile press" data-ch="${esc(t.ch)}">${esc(t.ch)}</button>`).join('')}</div>`;
   kit.owl(`Spell ${w}!`, `Let's spell ${w}!`);
   return new Promise(resolve => {
-    let pos = 0;
+    let pos = 0, clean = true;
     stage.onclick = e => {
       if (e.target.closest('[data-act="repeat"]')) return say(w);
       const b = e.target.closest('.tile');
@@ -507,6 +519,7 @@ export function spellWord(stage, kit, [w, p]) {
         sfx.count(pos + 1);
         pos++;
         if (pos === letters.length) {
+          store.record(`spell:${w}`, clean);
           sfx.good();
           confetti(14);
           say(`${spellOut(w)}. ${w}! ${pick(PRAISE)}`);
@@ -515,11 +528,97 @@ export function spellWord(stage, kit, [w, p]) {
           say(letterName(letters[pos - 1]));
         }
       } else {
+        clean = false;
         kit.miss();
         sfx.bad();
         flash(b, 'wrong');
         say(`That's ${letterName(b.dataset.ch)}. ${pick(TRY_AGAIN)}`);
       }
+    };
+  });
+}
+
+// ---------- Talking Tree ----------
+const APPLE_SPOTS = [[30, 18], [58, 14], [44, 30], [22, 38], [66, 36], [48, 8]];
+const treeHTML = apples => `
+  <div class="treebox">
+    <div class="tree-pic">🌳</div>
+    ${APPLE_SPOTS.slice(0, apples).map(([x, y]) => `<span class="apple" style="left:${x}%;top:${y}%">🍎</span>`).join('')}
+  </div>`;
+
+// He hears the word, then says it into the microphone. A right answer grows
+// an apple on the tree. `tree.apples` is shared across the level's words.
+// `nouns` adds "a"/"an" (This is a lion) — not for colors, numbers or phrases.
+export function talkWord(stage, kit, [w, p], tree, { nouns = false } = {}) {
+  const article = nouns ? (/^[aeiou]/.test(w) ? 'an ' : 'a ') : '';
+  const intro = nouns ? `This is ${article}${w}. Now you say: ${w}!` : `Listen: ${w}. Now you say: ${w}!`;
+  const draw = (status = '') => {
+    const mic = canListen();
+    stage.innerHTML = `
+      ${treeHTML(tree.apples)}
+      <button class="question press" data-act="hear"><div class="q-pic">${p}</div><div class="q-word">${esc(w)}</div></button>
+      ${mic
+        ? `<button class="mic press" data-act="mic" id="mic">🎤</button>`
+        : `<button class="btn go press" data-act="said" style="flex:none;padding:16px 28px">✅ I said it!</button>`}
+      <p class="heard" id="heard">${status}</p>
+      <div class="nav">
+        <button class="btn press" data-act="hear">🔊 Listen</button>
+        <button class="btn press" data-act="skip" id="skip" style="visibility:hidden">⏭️ Next</button>
+      </div>`;
+  };
+  draw();
+  kit.owl(`Say: ${w}`, intro);
+
+  return new Promise(resolve => {
+    let tries = 0, busy = false, done = false;
+    const showSkip = () => { const k = document.getElementById('skip'); if (k) k.style.visibility = 'visible'; };
+    const success = firstTry => {
+      done = true;
+      store.record(`say:${w}`, firstTry);
+      tree.apples = Math.min(tree.apples + 1, APPLE_SPOTS.length);
+      draw('');
+      sfx.good();
+      confetti(16);
+      say(`Wow! You said ${w}! ${pick(PRAISE)}`);
+      kit.wait(2400).then(resolve);
+    };
+    stage.onclick = async e => {
+      const b = e.target.closest('[data-act]');
+      if (!b || done) return;
+      const act = b.dataset.act;
+      if (act === 'hear') return say(w);
+      if (act === 'said') return success(true);
+      if (act === 'skip') {
+        done = true;
+        store.record(`say:${w}`, false);
+        say(`Good try! ${w}. Let's go on.`);
+        return kit.wait(1500).then(resolve);
+      }
+      if (act !== 'mic' || busy) return;
+      busy = true;
+      const micBtn = document.getElementById('mic');
+      micBtn.classList.add('listening');
+      document.getElementById('heard').textContent = 'Listening… 👂';
+      const r = await listen();
+      busy = false;
+      if (!kit.alive()) return;
+      micBtn.classList.remove('listening');
+      if (r.heard && matches(w, r.heard)) return success(tries === 0);
+      if (r.error === 'blocked') {
+        draw('The microphone is off, so just say it and tap ✅');
+        say(`Say ${w}, then tap the green button!`);
+        return;
+      }
+      if (r.error) {
+        document.getElementById('heard').textContent = "I didn't hear you 🙉";
+        return say(`I didn't hear you. Tap the microphone and say ${w}, loudly!`);
+      }
+      tries++;
+      kit.miss();
+      sfx.bad();
+      document.getElementById('heard').textContent = `I heard: “${r.heard[0] || '…'}”`;
+      say(tries >= 3 ? `Good try! Listen: ${w}. You can try again, or tap next.` : `Almost! Listen: ${w}. Now you say it!`);
+      if (tries >= 2) showSkip();
     };
   });
 }

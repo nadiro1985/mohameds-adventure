@@ -84,7 +84,17 @@ export const WORLDS = [
       { id: 'c5', title: '4 letters', icon: '🌙', spell: [['bird', '🐦'], ['milk', '🥛'], ['moon', '🌙'], ['tree', '🌳'], ['ship', '🚢'], ['book', '📖']] },
     ],
   },
-  { id: 'tree',   name: 'Talking Tree',    icon: '🌳', desc: 'Say the words out loud', soon: true },
+  {
+    id: 'tree', name: 'Talking Tree', icon: '🌳', theme: 'tree', color: '#ffe8cc',
+    desc: 'Say the words out loud',
+    levels: [
+      { id: 't1', title: 'Animals', icon: '🦁', say: 'animals' },
+      { id: 't2', title: 'Colors',  icon: '🌈', say: 'colors' },
+      { id: 't3', title: 'Food',    icon: '🍌', say: 'food' },
+      { id: 't4', title: 'Numbers', icon: '🔢', say: 'numbers' },
+      { id: 't5', title: 'Hello!',  icon: '👋', say: 'phrases' },
+    ],
+  },
 ];
 
 export const STICKERS = [
@@ -123,3 +133,11 @@ export const COLOR_THINGS = [
   ['brown', '🐻', 'bear'], ['brown', '🍫', 'chocolate'], ['white', '☁️', 'cloud'], ['white', '🥛', 'milk'],
   ['black', '🎱', 'ball'],
 ];
+
+// Talking Tree extra sets.
+export const SAY_SETS = {
+  numbers: [['one', '1️⃣'], ['two', '2️⃣'], ['three', '3️⃣'], ['four', '4️⃣'], ['five', '5️⃣'],
+            ['six', '6️⃣'], ['seven', '7️⃣'], ['eight', '8️⃣'], ['nine', '9️⃣'], ['ten', '🔟']],
+  phrases: [['hello', '🙋'], ['thank you', '🙏'], ['please', '🥺'], ['good morning', '🌅'], ['good night', '🌙'],
+            ['I love you', '❤️'], ['bye bye', '👋'], ['yes', '👍'], ['no', '👎'], ['sorry', '😔']],
+};
