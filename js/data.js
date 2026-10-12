@@ -61,8 +61,29 @@ export const WORLDS = [
       { id: 'j5', title: '16–20', from: 16, to: 20 },
     ],
   },
-  { id: 'farm',   name: 'Word Farm',       icon: '🐮', desc: 'Animals, colors, food', soon: true },
-  { id: 'castle', name: 'Spelling Castle', icon: '🏰', desc: 'Spell little words',    soon: true },
+  {
+    id: 'farm', name: 'Word Farm', icon: '🐮', theme: 'farm', color: '#d3f9d8',
+    desc: 'Animals, colors, food and more',
+    levels: [
+      { id: 'f1', title: 'Animals', icon: '🐶', words: 'animals' },
+      { id: 'f2', title: 'Colors',  icon: '🎨', words: 'colors' },
+      { id: 'f3', title: 'Food',    icon: '🍎', words: 'food' },
+      { id: 'f4', title: 'My Body', icon: '✋', words: 'body' },
+      { id: 'f5', title: 'Family',  icon: '👨‍👩‍👦', words: 'family' },
+      { id: 'f6', title: 'Things That Go', icon: '🚗', words: 'go' },
+    ],
+  },
+  {
+    id: 'castle', name: 'Spelling Castle', icon: '🏰', theme: 'castle', color: '#f3d9fa',
+    desc: 'Spell little words',
+    levels: [
+      { id: 'c1', title: '3 letters', icon: '🐱', spell: [['cat', '🐱'], ['dog', '🐶'], ['sun', '☀️'], ['bus', '🚌'], ['pig', '🐷'], ['hat', '🎩']] },
+      { id: 'c2', title: '3 letters', icon: '🦊', spell: [['bed', '🛏️'], ['cup', '🥤'], ['fox', '🦊'], ['box', '📦'], ['bee', '🐝'], ['egg', '🥚']] },
+      { id: 'c3', title: '3 letters', icon: '🐜', spell: [['ant', '🐜'], ['bat', '🦇'], ['car', '🚗'], ['cow', '🐮'], ['owl', '🦉'], ['pen', '🖊️']] },
+      { id: 'c4', title: '4 letters', icon: '🐸', spell: [['fish', '🐟'], ['duck', '🦆'], ['frog', '🐸'], ['star', '⭐'], ['cake', '🎂'], ['ball', '⚽']] },
+      { id: 'c5', title: '4 letters', icon: '🌙', spell: [['bird', '🐦'], ['milk', '🥛'], ['moon', '🌙'], ['tree', '🌳'], ['ship', '🚢'], ['book', '📖']] },
+    ],
+  },
   { id: 'tree',   name: 'Talking Tree',    icon: '🌳', desc: 'Say the words out loud', soon: true },
 ];
 
@@ -71,7 +92,34 @@ export const STICKERS = [
   '🏎️', '🚁', '⚽', '🎸', '🍦', '🐬', '🦕', '🤖', '👑', '💎',
   '🐧', '🦊', '🐸', '🍕', '🧁', '⛄', '🌻', '🐝', '🦜', '🐢',
   '🚒', '🚂', '🛸', '🏆', '🐳', '🦒', '🐨', '🍉', '🦈', '🏰',
+  '🦩', '🦚', '🐿️', '🦔', '🐞', '🌵', '🍓', '🍿', '🎠', '🚜',
+  '⛵', '🚲', '🛹', '🪐', '🍭', '🎯', '🐠', '🦓', '🧸', '🎡',
 ];
 
 export const PRAISE = ['Great job!', 'Well done!', 'Super!', 'Awesome!', 'You got it!', 'Brilliant!', 'Yay!', 'Amazing!'];
 export const TRY_AGAIN = ['Try again!', 'Oops, try again!', 'Almost! Try again!'];
+
+// Word Farm topics: [word, picture]
+export const WORD_SETS = {
+  animals: [['cat', '🐱'], ['dog', '🐶'], ['cow', '🐮'], ['pig', '🐷'], ['duck', '🦆'], ['horse', '🐴'],
+            ['sheep', '🐑'], ['chicken', '🐔'], ['rabbit', '🐰'], ['lion', '🦁'], ['monkey', '🐵'], ['elephant', '🐘']],
+  colors:  [['red', '🔴'], ['blue', '🔵'], ['green', '🟢'], ['yellow', '🟡'], ['orange', '🟠'],
+            ['purple', '🟣'], ['brown', '🟤'], ['black', '⚫'], ['white', '⚪']],
+  food:    [['apple', '🍎'], ['banana', '🍌'], ['bread', '🍞'], ['milk', '🥛'], ['egg', '🥚'], ['cheese', '🧀'],
+            ['carrot', '🥕'], ['cake', '🎂'], ['water', '💧'], ['rice', '🍚'], ['pizza', '🍕'], ['grapes', '🍇']],
+  body:    [['eye', '👁️'], ['ear', '👂'], ['nose', '👃'], ['mouth', '👄'], ['hand', '✋'], ['foot', '🦶'],
+            ['leg', '🦵'], ['arm', '💪'], ['tooth', '🦷'], ['hair', '💇']],
+  family:  [['mom', '👩'], ['dad', '👨'], ['baby', '👶'], ['brother', '👦'], ['sister', '👧'],
+            ['grandma', '👵'], ['grandpa', '👴'], ['family', '👨‍👩‍👦']],
+  go:      [['car', '🚗'], ['bus', '🚌'], ['train', '🚆'], ['plane', '✈️'], ['boat', '⛵'], ['bike', '🚲'],
+            ['ship', '🚢'], ['truck', '🚚'], ['rocket', '🚀'], ['taxi', '🚕'], ['tractor', '🚜'], ['helicopter', '🚁']],
+};
+
+// For "What color is it?" questions.
+export const COLOR_THINGS = [
+  ['red', '🍎', 'apple'], ['red', '🍓', 'strawberry'], ['yellow', '🍌', 'banana'], ['yellow', '🌻', 'sunflower'],
+  ['green', '🐸', 'frog'], ['green', '🥦', 'broccoli'], ['blue', '🐳', 'whale'], ['blue', '💙', 'heart'],
+  ['orange', '🥕', 'carrot'], ['orange', '🍊', 'orange'], ['purple', '🍇', 'grapes'], ['purple', '🍆', 'eggplant'],
+  ['brown', '🐻', 'bear'], ['brown', '🍫', 'chocolate'], ['white', '☁️', 'cloud'], ['white', '🥛', 'milk'],
+  ['black', '🎱', 'ball'],
+];

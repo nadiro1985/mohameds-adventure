@@ -7,21 +7,22 @@ by playing mini-games, earning stars and collecting stickers.
 It's a web app that installs on an iPhone like a real app: it gets a Home Screen
 icon, opens full-screen and works offline. No App Store is needed.
 
-## Version 1 – what's inside
+## What's inside
 
 | World | What he learns | Mini-games |
 |---|---|---|
 | 🏖️ **Alphabet Beach** | Letters A–Z, big & small letters, "A is for Apple" | Letter cards, Balloon Pop, Which letter does it start with?, Find the small letter, Which picture starts with…? |
 | 🌴 **Number Jungle** | Numbers 1–20, counting | Number cards (tap to count), How many?, Balloon Pop, Feed the Monkey, What comes next? |
-| 🐮 Word Farm | *(coming in Version 2)* | |
-| 🏰 Spelling Castle | *(coming in Version 2)* | |
+| 🐮 **Word Farm** | First words: animals, colors, food, body, family, things that go | Word cards, Listen & Find, Read & Find, picture/color balloons, Memory Match, What color is it? |
+| 🏰 **Spelling Castle** | Spelling 3- and 4-letter words (cat, dog, fish, frog…) | Spelling cards (c-a-t), Find the missing letter, Spell It with letter tiles |
 | 🌳 Talking Tree | *(coming in Version 3)* | |
 
 - Every instruction is **spoken out loud**, so he doesn't need to read yet (tap the owl to hear it again).
 - Wrong answers just wiggle and he tries again. There are no timers and no losing.
 - 1–3 ⭐ per level; finishing a level unlocks the next one.
-- A 🎁 present after every level adds a sticker to his **Sticker Book** (40 to collect).
+- A 🎁 present after every level adds a sticker to his **Sticker Book** (60 to collect).
 - Progress is saved on the phone.
+- ⚙️ Parent Settings (gear on the home screen): choose the voice and speaking speed.
 
 ## Put it on the iPhone
 

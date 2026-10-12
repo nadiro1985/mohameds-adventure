@@ -181,3 +181,22 @@ button { font-family: inherit; color: inherit; border: 0; cursor: pointer; paddi
 .voice { display: flex; justify-content: space-between; align-items: center; gap: 8px; text-align: left; background: #f8f9fa; border-radius: 16px; padding: 12px 14px; font-size: 18px; font-weight: bold; box-shadow: 0 3px 0 rgba(0,0,0,.1); }
 .voice small { color: var(--muted); font-weight: normal; font-size: 13px; }
 .tipbox { background: #fff9db; border-radius: 16px; padding: 12px 14px; font-size: 15px; line-height: 1.45; }
+
+/* ---------- Version 2: words and spelling ---------- */
+body.theme-farm   { background: linear-gradient(180deg, #74c0fc 0%, #d0ebff 50%, #8ce99a 50%, #37b24d 100%) fixed; }
+body.theme-castle { background: linear-gradient(165deg, #e599f7 0%, #9775fa 55%, #5f3dc4 100%) fixed; }
+.word.spaced, .q-word.spaced { letter-spacing: 8px; }
+.gap { color: #f76707; }
+.mem { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; width: 100%; }
+.mcard { aspect-ratio: 3 / 4; border-radius: 18px; background: var(--sun); font-size: min(11vw, 48px); }
+.mcard.open { background: #fff; animation: pop .25s; }
+.mcard.done { background: var(--good-soft); animation: pop .35s; }
+.slots { display: flex; gap: 10px; justify-content: center; }
+.slot-l { width: 58px; height: 68px; border-radius: 16px; border: 4px dashed rgba(255,255,255,.85); background: rgba(255,255,255,.25); display: grid; place-items: center; font-size: 40px; font-weight: bold; }
+.slot-l.filled { background: #fff; border-style: solid; border-color: #fff; animation: pop .25s; }
+.tiles { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.tile { width: 66px; height: 66px; border-radius: 18px; background: var(--sun); font-size: 38px; font-weight: bold; color: var(--ink); }
+.tile.used { visibility: hidden; }
+.tile.wrong { background: var(--bad-soft); animation: shake .4s; }
+.node .ni { font-size: 46px; line-height: 1; }
+.node-label { color: #fff; font-weight: bold; font-size: 16px; text-shadow: 0 2px 0 rgba(0,0,0,.25); text-align: center; }

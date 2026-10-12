@@ -1,7 +1,7 @@
-import { WORLDS, STICKERS, letter } from './data.js';
+import { WORLDS, STICKERS, WORD_SETS, letter } from './data.js';
 import { store } from './store.js';
 import { say, sfx, unlockAudio, englishVoices, voiceSettings } from './sound.js';
-import { range, sample, confetti, toast, esc } from './util.js';
+import { range, sample, pick, confetti, toast, esc } from './util.js';
 import * as G from './games.js';
 
 const $app = document.getElementById('app');
@@ -128,7 +128,8 @@ function world(w) {
         const open = store.isUnlocked(w, i);
         return `<div class="node-wrap">
           <button class="node press ${open ? '' : 'locked'} ${i === firstNew ? 'next' : ''}" data-act="level" data-i="${i}">
-            ${open ? l.title : '🔒'}</button>
+            ${!open ? '🔒' : l.icon ? `<span class="ni">${l.icon}</span>` : l.title}</button>
+          ${l.icon ? `<div class="node-label">${l.title}</div>` : ''}
           <div class="node-stars">${open ? starsRow(store.best(l.id)) : ''}</div>
         </div>`;
       }).join('')}
@@ -157,6 +158,20 @@ function buildSteps(w, level) {
       kind: 'letter', items: G.letterItems(set), targets: sample(set, 5 + big).map(x => x.L),
     }));
     add(3 + big, (s, k) => G.letterQuestion(s, k, set));
+  } else if (w.id === 'farm') {
+    const words = sample(WORD_SETS[level.words], 6);
+    steps.push((s, k) => G.introWords(s, k, words));
+    add(3, (s, k) => G.wordQuestion(s, k, words, 'listen'));
+    steps.push((s, k) => G.balloons(s, k, {
+      kind: '', items: G.wordItems(words, { colors: level.words === 'colors' }), targets: sample(words, 5).map(x => x[0]),
+    }));
+    steps.push((s, k) => G.memoryMatch(s, k, words));
+    if (level.words === 'colors') add(2, (s, k) => G.colorQuestion(s, k));
+    add(2, (s, k) => G.wordQuestion(s, k, words, 'read'));
+  } else if (w.id === 'castle') {
+    steps.push((s, k) => G.introWords(s, k, level.spell, { spell: true }));
+    add(3, (s, k) => G.missingLetter(s, k, pick(level.spell)));
+    for (const word of sample(level.spell, 4)) steps.push((s, k) => G.spellWord(s, k, word));
   } else {
     const nums = range(level.from, level.to);
     if (!level.review) steps.push((s, k) => G.introNumbers(s, k, nums));
